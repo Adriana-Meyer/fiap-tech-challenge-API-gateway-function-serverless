@@ -91,7 +91,7 @@ terraform destroy
 ## CI/CD
 
 - **`terraform-validate.yml`** — roda em todo push/PR para `develop`/`main`: builda e testa a Lambda (`mvn package`), depois `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`. Não precisa de credenciais AWS.
-- **`terraform-apply.yml`** — disparo manual (`workflow_dispatch`), com escolha entre `plan`/`apply`/`destroy`. Builda a Lambda, depois roda o Terraform contra a AWS de verdade, usando credenciais temporárias da sessão AWS Academy via GitHub Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `APP_BACKEND_HOST`) — precisam ser atualizadas a cada nova sessão do Lab. Fica manual durante o desenvolvimento; passa a rodar automaticamente no push para `main` mais perto da entrega final do projeto.
+- **`terraform-apply.yml`** — disparo manual (`workflow_dispatch`), com escolha entre `plan`/`apply`/`destroy`. Builda a Lambda, depois roda o Terraform contra a AWS de verdade, usando credenciais temporárias da sessão AWS Academy via GitHub Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `APP_BACKEND_HOST`) — precisam ser atualizadas a cada nova sessão do Lab. Fica `workflow_dispatch` manual permanentemente, inclusive no estado final entregue: essa é a alternativa adotada para economizar os recursos limitados do Lab (sessão de ~4h) — o deploy em si é automático de ponta a ponta assim que disparado, sem nenhuma intervenção manual durante a execução; só o gatilho é manual, para ser acionado quando for conveniente e a sessão do Lab estiver ativa.
 
 ## Variáveis Terraform
 
