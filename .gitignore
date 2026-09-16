@@ -1,0 +1,12 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+
+# Maven build output (the Lambda jar is built by CI/local before
+# `terraform apply`, never committed)
+lambda/auth/target/
+lambda/auth/dependency-reduced-pom.xml

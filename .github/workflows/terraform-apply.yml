@@ -1,0 +1,65 @@
+name: Terraform — Lambda + API Gateway
+
+# workflow_dispatch permanently, by design — not a stopgap. Manual
+# trigger avoids burning AWS Academy's limited budget/session time on
+# every merge. The deploy itself is automatic end-to-end once
+# triggered, with no manual steps during the run — only the trigger is
+# manual, fired whenever convenient and the Lab session is active.
+# Tested successfully end-to-end on 2026-09-15.
+#
+# Requires Repo 4's app to already be reachable via its LoadBalancer
+# (var.app_backend_host) in the same AWS session.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to run'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+jobs:
+  terraform:
+    name: Terraform ${{ github.event.inputs.action }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      TF_VAR_app_backend_host: ${{ secrets.APP_BACKEND_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: lambda/auth/pom.xml
+
+      - name: Build the Lambda jar
+        run: mvn -B -f lambda/auth/pom.xml package -DskipTests
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform plan
+        if: github.event.inputs.action == 'plan'
+        run: terraform plan
+
+      - name: Terraform apply
+        if: github.event.inputs.action == 'apply'
+        run: terraform apply -auto-approve
+
+      - name: Terraform destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
