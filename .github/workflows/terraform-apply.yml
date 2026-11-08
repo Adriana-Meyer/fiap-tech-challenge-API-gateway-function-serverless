@@ -7,7 +7,7 @@ name: Terraform — Lambda + API Gateway
 # manual, fired whenever convenient and the Lab session is active.
 # Tested successfully end-to-end on 2026-09-15.
 #
-# Requires Repo 4's app to already be reachable via its LoadBalancer
+# Requires os-service's app to already be reachable via its LoadBalancer
 # (var.app_backend_host) in the same AWS session.
 on:
   workflow_dispatch:

@@ -1,6 +1,6 @@
 package com.fiap.workshop.lambda.auth;
 
-// Same checksum algorithm as the app's CpfValidator (Repo 4,
+// Same checksum algorithm as the app's CpfValidator (os-service,
 // domain/model/shared/CpfValidator.java) — deliberately duplicated
 // here since this Lambda is its own deployable Maven project, kept in
 // sync so both reject a malformed CPF before it reaches the app.
