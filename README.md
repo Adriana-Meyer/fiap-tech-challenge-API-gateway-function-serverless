@@ -1,6 +1,6 @@
 # fiap-tech-challenge-API-gateway-function-serverless
 
-Porta de entrada única (API Gateway) e autenticação via CPF (Function Serverless) do Tech Challenge Fase 3 — FIAP Pós-Tech, Arquitetura de Software, turma 15SOAT. Repositório 1 dos 4 exigidos pela Fase 3.
+Porta de entrada única (API Gateway) e autenticação via CPF (Function Serverless) do Tech Challenge Fase 3 — FIAP Pós-Tech, Arquitetura de Software, turma 15SOAT. Um dos 4 repositórios exigidos pela Fase 3.
 
 ## Tecnologias
 
@@ -31,7 +31,7 @@ flowchart TB
 
     Lambda["Lambda auth-cpf (Java 17)<br/>valida checksum do CPF,<br/>delega login pra App,<br/>repassa o JWT"]:::lambda
 
-    App["App (Repositório 4)<br/>/api/v1/auth/login<br/>+ demais rotas — JWT/RBAC<br/>continuam validados na App"]:::app
+    App["App (os-service)<br/>/api/v1/auth/login<br/>+ demais rotas — JWT/RBAC<br/>continuam validados na App"]:::app
 
     Client -- "1. POST /auth/token {cpf, senha}" --> RouteAuth
     RouteAuth -- "2. invoke" --> Lambda
@@ -44,18 +44,18 @@ flowchart TB
     RouteProxy -- "HTTP proxy" --> App
 ```
 
-**Decisões de desenho** (ADRs/RFCs completos centralizados no repositório da App, pasta [`docs/`](https://github.com/Adriana-Meyer/fiap-tech-challenge-pos-tech/tree/main/docs)):
+**Decisões de desenho** (ADRs/RFCs completos centralizados no repositório da App, pasta [`docs/`](https://github.com/Adriana-Meyer/fiap-tech-challenge-os-service/tree/main/docs)):
 - **Java em vez de Node.js**: a Lambda é deliberadamente fina (valida CPF, faz uma chamada HTTP, repassa a resposta) — sem framework (nada de Spring), pra não pagar cold start de um contexto de aplicação numa função tão simples. A escolha de Java (em vez de uma opção "mais simples" de runtime leve como Node/Python) foi por consistência com o resto do projeto e também como oportunidade de aprendizado da linguagem Java.
 - **Lambda consulta a própria App, não é um Lambda Authorizer**: a Lambda só participa da emissão do token (rota `/auth/token`); todas as outras rotas passam direto (HTTP proxy) pra App, que continua validando o JWT e os papéis (RBAC) exatamente como antes. Evita duplicar lógica de segurança fora da App.
 - **Validação de CPF duplicada, não compartilhada via lib**: o algoritmo de checksum existe tanto aqui (`lambda/auth/.../CpfValidator.java`) quanto na App (`domain/model/shared/CpfValidator.java`) — decisão consciente de não criar uma biblioteca compartilhada entre repositórios, para manter os 4 repositórios genuinamente independentes (sem acoplar o build de um ao artefato publicado por outro).
-- **`app_backend_host` como variável manual**: o Terraform deste repositório não descobre o LoadBalancer da App via `data source` automático — copia-se manualmente o host (`kubectl get svc workshop-app -n workshop`, Repositório 4) pra uma variável, mesmo padrão já usado para o endpoint do RDS entre os Repositórios 3 e 4.
+- **`app_backend_host` como variável manual**: o Terraform deste repositório não descobre o LoadBalancer da App via `data source` automático — copia-se manualmente o host (`kubectl get svc workshop-app -n workshop`, os-service) pra uma variável, mesmo padrão já usado para o endpoint do RDS entre os repositórios os-database-infrastructure e os-service.
 
 ## Pré-requisitos
 
 - Java 17+ e Maven (para buildar a Lambda)
 - Terraform >= 1.5
 - Conta AWS Academy Learner Lab **ativa** (sessão de 4h) com credenciais temporárias exportadas
-- App (Repositório 4) já com deploy real feito (`deploy-aws.yml`) e o host do LoadBalancer em mãos
+- App (os-service) já com deploy real feito (`deploy-aws.yml`) e o host do LoadBalancer em mãos
 
 ## Executando
 
@@ -97,11 +97,11 @@ terraform destroy
 
 | Variável | Descrição |
 |---|---|
-| `app_backend_host` | **Obrigatória**, sem default. Host:porta do LoadBalancer da App (Repositório 4) |
+| `app_backend_host` | **Obrigatória**, sem default. Host:porta do LoadBalancer da App (os-service) |
 | `aws_region` | Default `us-east-1` |
 | `project_name` | Default `tech-challenge` |
 
 ## APIs
 
 - Rota de autenticação: `POST /auth/token` — ver exemplo de `curl` acima.
-- Todas as demais rotas da API são as mesmas documentadas no Swagger da App: [Repositório 4](https://github.com/Adriana-Meyer/fiap-tech-challenge-pos-tech#documenta%C3%A7%C3%A3o-da-api-swagger-ui), só que acessadas através da URL deste API Gateway em vez de diretamente no LoadBalancer.
+- Todas as demais rotas da API são as mesmas documentadas no Swagger da App: [os-service](https://github.com/Adriana-Meyer/fiap-tech-challenge-os-service#documenta%C3%A7%C3%A3o-da-api-swagger-ui), só que acessadas através da URL deste API Gateway em vez de diretamente no LoadBalancer.
