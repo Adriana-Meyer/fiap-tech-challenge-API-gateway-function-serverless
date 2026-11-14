@@ -17,13 +17,13 @@ resource "aws_lambda_function" "auth" {
 
   # Java benefits from more memory (Lambda allocates CPU proportionally),
   # which shortens JVM cold start; timeout covers cold start + the HTTP
-  # call to the app's login endpoint.
+  # call to the OS service's login endpoint.
   memory_size = 512
   timeout     = 15
 
   environment {
     variables = {
-      APP_LOGIN_URL = "http://${var.app_backend_host}/api/v1/auth/login"
+      APP_LOGIN_URL = "http://${var.service_hosts.os}/api/v1/auth/login"
     }
   }
 }
