@@ -24,7 +24,7 @@ resource "aws_apigatewayv2_route" "auth_token" {
   target    = "integrations/${aws_apigatewayv2_integration.auth_lambda.id}"
 }
 
-# Phase 4 split the system in four services, each behind its own load balancer.
+# The system is split in four services, each behind its own load balancer.
 # The gateway stays the single entry point and sends each path prefix to the
 # service that owns it. Anything not listed here belongs to the OS service.
 #
