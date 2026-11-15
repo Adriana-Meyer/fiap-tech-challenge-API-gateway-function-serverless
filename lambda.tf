@@ -11,7 +11,7 @@ resource "aws_lambda_function" "auth" {
   function_name    = "${var.project_name}-cpf-auth"
   role             = data.aws_iam_role.lab_role.arn
   handler          = "com.fiap.workshop.lambda.auth.AuthHandler::handleRequest"
-  runtime          = "java17"
+  runtime          = "java21"
   filename         = "${path.module}/lambda/auth/target/auth-cpf-lambda.jar"
   source_code_hash = filebase64sha256("${path.module}/lambda/auth/target/auth-cpf-lambda.jar")
 
