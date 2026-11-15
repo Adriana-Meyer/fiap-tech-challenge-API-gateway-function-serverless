@@ -6,7 +6,7 @@ Porta de entrada única (API Gateway) e autenticação via CPF (Function Serverl
 
 | Camada | Tecnologia |
 |---|---|
-| Function Serverless | Java 17, Maven, `aws-lambda-java-core`/`events`, Jackson |
+| Function Serverless | Java 21, Maven, `aws-lambda-java-core`/`events`, Jackson |
 | Porta de entrada | Amazon API Gateway (HTTP API) |
 | Provisionamento | Terraform >= 1.5, provider `hashicorp/aws` |
 | Nuvem | AWS (conta acadêmica AWS Academy Learner Lab) |
@@ -32,7 +32,7 @@ flowchart TB
         RouteProxy["ANY /{proxy+} (todo o resto)"]:::gw
     end
 
-    Lambda["Lambda auth-cpf (Java 17)<br/>valida checksum do CPF,<br/>delega login pra App,<br/>repassa o JWT"]:::lambda
+    Lambda["Lambda auth-cpf (Java 21)<br/>valida checksum do CPF,<br/>delega login pra App,<br/>repassa o JWT"]:::lambda
 
     App["OS Service<br/>/api/v1/auth/login<br/>+ OS, clientes, veículos, serviços..."]:::app
     Inv["Inventory Service"]:::app
@@ -76,7 +76,7 @@ flowchart TB
 
 ## Pré-requisitos
 
-- Java 17+ e Maven (para buildar a Lambda)
+- Java 21+ e Maven (para buildar a Lambda)
 - Terraform >= 1.5
 - Conta AWS Academy Learner Lab **ativa** (sessão de 4h) com credenciais temporárias exportadas
 - Os 4 serviços (OS, Inventory, Billing e Execution) já com deploy feito (`deploy-aws.yml`), cada um com o seu load balancer
