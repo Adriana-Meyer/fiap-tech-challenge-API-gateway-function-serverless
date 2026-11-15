@@ -1,6 +1,6 @@
 # fiap-tech-challenge-API-gateway-function-serverless
 
-Porta de entrada única (API Gateway) e autenticação via CPF (Function Serverless) do Tech Challenge — FIAP Pós-Tech, Arquitetura de Software, turma 15SOAT. Um dos 4 repositórios exigidos pela Fase 3; na Fase 4 continua sendo a entrada única, agora **roteando cada prefixo da API para o serviço dono dele** (OS, Inventory, Billing e Execution).
+Porta de entrada única (API Gateway) e autenticação via CPF (Function Serverless) do Tech Challenge — FIAP Pós-Tech, Arquitetura de Software, turma 15SOAT. É a entrada única do sistema e **roteia cada prefixo da API para o serviço dono dele** (OS, Inventory, Billing e Execution).
 
 ## Tecnologias
 
@@ -60,7 +60,7 @@ flowchart TB
 - **Java em vez de Node.js**: a Lambda é deliberadamente fina (valida CPF, faz uma chamada HTTP, repassa a resposta) — sem framework (nada de Spring), pra não pagar cold start de um contexto de aplicação numa função tão simples. A escolha de Java (em vez de uma opção "mais simples" de runtime leve como Node/Python) foi por consistência com o resto do projeto e também como oportunidade de aprendizado da linguagem Java.
 - **Lambda consulta a própria App, não é um Lambda Authorizer**: a Lambda só participa da emissão do token (rota `/auth/token`); todas as outras rotas passam direto (HTTP proxy) pra App, que continua validando o JWT e os papéis (RBAC) exatamente como antes. Evita duplicar lógica de segurança fora da App.
 - **Validação de CPF duplicada, não compartilhada via lib**: o algoritmo de checksum existe tanto aqui (`lambda/auth/.../CpfValidator.java`) quanto na App (`domain/model/shared/CpfValidator.java`) — decisão consciente de não criar uma biblioteca compartilhada entre repositórios, para manter os 4 repositórios genuinamente independentes (sem acoplar o build de um ao artefato publicado por outro).
-- **Roteamento por prefixo (Fase 4):** cada serviço tem o seu load balancer, e o gateway manda cada prefixo para o dono dele. O que não está na lista pertence ao OS, que continua sendo a rota padrão (`ANY /{proxy+}`). A lista de prefixos vem dos `@RequestMapping` dos controllers de cada serviço:
+- **Roteamento por prefixo:** cada serviço tem o seu load balancer, e o gateway manda cada prefixo para o dono dele. O que não está na lista pertence ao OS, que continua sendo a rota padrão (`ANY /{proxy+}`). A lista de prefixos vem dos `@RequestMapping` dos controllers de cada serviço:
 
   | Prefixo | Serviço |
   |---|---|
@@ -109,7 +109,7 @@ curl -X POST "$(terraform output -raw auth_token_endpoint)" \
   -d '{"cpf": "11144477735", "password": "workshop123"}'
 ```
 
-Para desativar tudo ao final da sessão de estudo (economiza orçamento do Lab):
+Para desativar tudo ao final da sessão do Lab (economiza orçamento do Lab):
 
 ```bash
 terraform destroy
