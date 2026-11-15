@@ -39,9 +39,9 @@ flowchart TB
     Bil["Billing Service"]:::app
     Exe["Execution Service"]:::app
 
-    Client -- "1. POST /auth/token {cpf, senha}" --> RouteAuth
+    Client -- "1. POST /auth/token {cpf, password}" --> RouteAuth
     RouteAuth -- "2. invoke" --> Lambda
-    Lambda -- "3. POST /api/v1/auth/login {cpf, senha}" --> App
+    Lambda -- "3. POST /api/v1/auth/login {cpf, password}" --> App
     App -- "4. 200 {token}" --> Lambda
     Lambda -- "5. repassa o token" --> RouteAuth
     RouteAuth -- "6. token" --> Client
