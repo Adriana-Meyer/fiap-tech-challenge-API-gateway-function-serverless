@@ -7,8 +7,11 @@ name: Terraform — Lambda + API Gateway
 # manual, fired whenever convenient and the Lab session is active.
 # Tested successfully end-to-end on 2026-09-15.
 #
-# Requires Repo 4's app to already be reachable via its LoadBalancer
-# (var.app_backend_host) in the same AWS session.
+# Requires the four services (os, inventory, billing, execution) to already
+# be deployed in the same AWS session: their load balancer hosts are looked up
+# in the cluster by scripts/discover-service-hosts.sh, so there is nothing to
+# copy by hand. For `destroy` the lookup is skipped (the services are usually
+# gone by then).
 on:
   workflow_dispatch:
     inputs:
@@ -31,14 +34,13 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      TF_VAR_app_backend_host: ${{ secrets.APP_BACKEND_HOST }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
           cache: maven
           cache-dependency-path: lambda/auth/pom.xml
 
@@ -48,6 +50,15 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
+
+      - name: Discover the services' load balancers
+        env:
+          ACTION: ${{ github.event.inputs.action }}
+        run: |
+          if [ "$ACTION" != "destroy" ]; then
+            aws eks update-kubeconfig --region us-east-1 --name tech-challenge-eks
+          fi
+          echo "TF_VAR_service_hosts=$(bash scripts/discover-service-hosts.sh "$ACTION")" >> "$GITHUB_ENV"
 
       - name: Terraform init
         run: terraform init

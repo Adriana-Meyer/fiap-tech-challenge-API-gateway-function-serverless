@@ -8,7 +8,25 @@ variable "project_name" {
   default = "tech-challenge"
 }
 
-variable "app_backend_host" {
-  description = "host:port of the app's LoadBalancer Service (Repo 4, k8s/03-app/service.yaml) — copied manually from `kubectl get svc workshop-app -n workshop` after Repo 4's deploy-aws.yml runs, no scheme/path. Same manual-copy pattern already used for the RDS endpoint between Repos 3 and 4."
-  type        = string
+variable "service_hosts" {
+  description = <<-EOT
+    host (and optional port) of the LoadBalancer Service of each service, with no scheme and no path,
+    for example "a1b2c3.elb.us-east-1.amazonaws.com". The Services are the ones the services' own
+    deploy-aws.yml create (workshop-app in `workshop`, inventory-service in `inventory`,
+    billing-service in `billing`, execution-service in `execution`).
+
+    terraform-apply.yml fills this in by itself (scripts/discover-service-hosts.sh); to run Terraform
+    by hand, pass it as JSON in TF_VAR_service_hosts.
+  EOT
+  type = object({
+    os        = string
+    inventory = string
+    billing   = string
+    execution = string
+  })
+
+  validation {
+    condition     = alltrue([for host in values(var.service_hosts) : can(regex("^[A-Za-z0-9.-]+(:[0-9]+)?$", host))])
+    error_message = "Each service host must be a host name with an optional port, with no scheme (http://) and no path."
+  }
 }

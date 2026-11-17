@@ -11,19 +11,19 @@ resource "aws_lambda_function" "auth" {
   function_name    = "${var.project_name}-cpf-auth"
   role             = data.aws_iam_role.lab_role.arn
   handler          = "com.fiap.workshop.lambda.auth.AuthHandler::handleRequest"
-  runtime          = "java17"
+  runtime          = "java21"
   filename         = "${path.module}/lambda/auth/target/auth-cpf-lambda.jar"
   source_code_hash = filebase64sha256("${path.module}/lambda/auth/target/auth-cpf-lambda.jar")
 
   # Java benefits from more memory (Lambda allocates CPU proportionally),
   # which shortens JVM cold start; timeout covers cold start + the HTTP
-  # call to the app's login endpoint.
+  # call to the OS service's login endpoint.
   memory_size = 512
   timeout     = 15
 
   environment {
     variables = {
-      APP_LOGIN_URL = "http://${var.app_backend_host}/api/v1/auth/login"
+      APP_LOGIN_URL = "http://${var.service_hosts.os}/api/v1/auth/login"
     }
   }
 }
